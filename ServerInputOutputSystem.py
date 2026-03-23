@@ -5,37 +5,42 @@ from Server import UserManager
 HOST = '0.0.0.0'  
 PORT = 9000      
 userManager = UserManager()
+
 def getInput(conn):
     return conn.recv(1024).decode('utf-8').strip()
+
 def sendOutput(conn,text):
     conn.sendall(text)
+
 def handle_client(conn, addr):
     print(f"New connection from {addr}")
-    sendOutput(conn,b"Welcome! Type 'exit' to quit.\n\n\n Do you want to log in or to sign up?")
-    log_or_reg = getInput(conn)
-    sendOutput(conn,b"username,password")
+    sendOutput(conn,b"Welcome! Type 'exit' to quit.\n\n\nWhat do you want to do?\n")
     answer = getInput(conn)
-    split = answer.find(",")
-    if split == -1:
-        sendOutput(conn,b"Invalid format. Use username,password")
-        
-    username = answer[:split]
-    password = answer[split + 1:]
+    splitID = answer.find(",")
+    splitGame = answer.find("/")
+    if splitID == -1:
+        logOrReg = answer
+        sendOutput(conn,"Enter username,password")
+        answer = getInput(conn)
+        splitName = answer.find(",")
+        if splitName == -1:
+            sendOutput(conn,b"Invalid format. Use username,password")
+            
+        username = answer[:splitName]
+        password = answer[splitName + 1:]
 
-    sendOutput(conn, userManager.start(log_or_reg,username,password))
+        sendOutput(conn, userManager.start(logOrReg,username,password))
+        return handle_client(conn,addr)
+    elif splitGame == -1:
+        playerID = int(answer[:splitID])
+        return userManager.PlayAGame(playerID=playerID, createOrJoin=answer[splitID+1:])
+    else:
+        playerID = int(answer[splitGame+1:splitID])
+        GameID = int(answer[:splitGame])
+        return userManager.MakeAMoove(playerID==playerID,gameID=GameID,move=answer[:splitID])
 
-    try:
-        while True:
-            data = getInput(conn)
-            if not data or data.lower() == "exit":
-                break
-            print(f"[{addr}] {data}")  
-            sendOutput(b"Server received: "+data+"\n".encode('utf-8'))  
-    except Exception as e:
-        print(f"Error with {addr}: {e}")
-    finally:
-        conn.close()
-        print(f"Connection with {addr} closed")
+
+    
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))

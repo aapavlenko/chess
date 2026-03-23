@@ -1,19 +1,24 @@
 import chess
 
-board = chess.Board()
+class Game():
+    def __init__(self,player1,player2 = -1):
+        self.board = chess.Board()
+        self.players = []
+        self.players[0] = player1
+        self.players[1] = player2
+        self.playerToMove = 0
 
-while True:
-    print(board)  # показываем доску
-    
-    move = input("Введите ход (например e2e4): ")
-    
-    try:
-        move = chess.Move.from_uci(move)
+    def MakeAMove(self,move):
+        try:
+            move = chess.Move.from_uci(move)
         
-        if move in board.legal_moves:
-            board.push(move)  # делаем ход
-        else:
-            print("Нелегальный ход!")
+            if move in self.board.legal_moves:
+                self.board.push(move)  
+                self.playerToMove += 1-2*self.playerToMove #reverses the player to move
+                return self.board
+            else:
+                return 2 #illigal move error
     
-    except:
-        print("Ошибка ввода!")
+        except:
+            return 1 #incorrect move notation error
+
