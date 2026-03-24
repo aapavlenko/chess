@@ -1,50 +1,49 @@
 import socket
 
-HOST = '10.176.155.15'  # IP сервера
-PORT = 9001             # Порт сервера
 
-userID = -1
-gameID = -1
-gameBoard = ""
+class GameClient:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.client = None
 
-def login(login, password):
-    ask(client,"reg " + login + " " + password)
-    global userID
-    userID = int(getRespons(client))
+        self.user_id = -1
+        self.game_id = -1
+        self.game_board = ""
+        self.connect(self)
 
-def register(login, password):
-    ask(client,"log " + login+ " " +password)
-    global userID
-    userID = int(getRespons(client))
+    def connect(self):
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client.connect((self.host, self.port))
 
-def createGame():
-    ask(client,"start " + userID +" "+"a")
-    global gameID
-    gameID = getRespons(client)
+    def close(self):
+        if self.client:
+            self.client.close()
 
-def joinGame():
-    ask(client, "join " + userID)
-    gameID =int(client,getRespons(client)[1])
-    ask(client,gameID)
-def MakeAMove(move):
-    ask(client,"move " + userID + " " + move)
-    ask(gameID)
-    global gameBoard
-    gameBoard = getRespons(client)
+    def ask(self, text):
+        self.client.sendall(str(text).encode('utf-8'))
 
+    def get_response(self):
+        return self.client.recv(1024).decode('utf-8')
 
+    def login(self, login, password):
+        self.ask(f"log {login} {password}")
+        self.user_id = int(self.get_response())
 
-def getRespons(client):
-    return client.recv(1024).decode('utf-8')
-def ask(client, text):
-    client.sendall(str(text).encode('utf-8'))
+    def register(self, login, password):
+        self.ask(f"reg {login} {password}")
+        self.user_id = int(self.get_response())
 
-try:
-    # Создаем сокет и подключаемся к серверу
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((HOST, PORT))
+    def create_game(self):
+        self.ask(f"start {self.user_id} a")
+        self.game_id = int(self.get_response())
 
-except Exception as e:
-    print(f"Error: {e}")
-finally:
-    client.close()
+    def join_game(self):
+        self.ask(f"join {self.user_id}")
+        response = self.get_response()
+        self.game_id = int(response)
+
+    def make_move(self, move):
+        self.ask(f"move {self.user_id} {move}")
+        self.game_board = self.get_response()
+        return self.game_board

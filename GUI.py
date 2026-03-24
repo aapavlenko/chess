@@ -1,10 +1,12 @@
 import tkinter as tk
 import chess
+from ClientInputOutputSystem import GameClient
 
 board = chess.Board()
+gameClient = GameClient(host='10.176.155.15', port=9001)
 CELL = 60
 root = tk.Tk()
-root.title("Шахматы")
+root.title("Chess")
 
 canvas = tk.Canvas(root, width=8*CELL, height=8*CELL)
 canvas.pack()
@@ -46,16 +48,17 @@ def promote_pawn(move):
         move.promotion = piece_type
         if move in board.legal_moves:
             board.push(move)  # добавляем ход после выбора фигуры
+            gameClient.make_move(move)
         draw()
         promotion_window.destroy()
         global selected_square
         selected_square = None  # сброс выбранной клетки
 
     tk.Label(promotion_window, text="Превратить пешку в:").pack(pady=5)
-    tk.Button(promotion_window, text="Ферзь", command=lambda: choose(chess.QUEEN)).pack(fill="x")
-    tk.Button(promotion_window, text="Ладья", command=lambda: choose(chess.ROOK)).pack(fill="x")
-    tk.Button(promotion_window, text="Слон", command=lambda: choose(chess.BISHOP)).pack(fill="x")
-    tk.Button(promotion_window, text="Конь", command=lambda: choose(chess.KNIGHT)).pack(fill="x")
+    tk.Button(promotion_window, text="♛", command=lambda: choose(chess.QUEEN)).pack(fill="x")
+    tk.Button(promotion_window, text="♜", command=lambda: choose(chess.ROOK)).pack(fill="x")
+    tk.Button(promotion_window, text="♝", command=lambda: choose(chess.BISHOP)).pack(fill="x")
+    tk.Button(promotion_window, text="♞", command=lambda: choose(chess.KNIGHT)).pack(fill="x")
 
 
 def on_click(event):
@@ -88,6 +91,7 @@ def on_click(event):
         # обычный ход без превращения
         if move in board.legal_moves:
             board.push(move)
+            gameClient.make_move(move=move)
 
         selected_square = None
 
