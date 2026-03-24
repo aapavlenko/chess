@@ -1,60 +1,79 @@
 from ServerLogic import Game
 
+
 class UserManager:
     def __init__(self):
-        self.users_passwords = {}  #username ->password
-        self.active_users = {}  #username->ID 
-        self.currentGames = [] #games
+        self.users_passwords = {}   # username -> password
+        self.active_users = {}      # username -> ID
+        self.currentGames = []      # games
 
     def login(self, username, password):
-        if username in self.users_passwords:
-            if self.users_passwords[username] == password:
-                return self.add_active_user(username)
-            else:
-                return b"Incorrect password"
-        else:
-            return b"No such user found"
+        if username not in self.users_passwords:
+            return "No such user found"
+
+        if self.users_passwords[username] != password:
+            return "Incorrect password"
+
+        user_id = self.add_active_user(username)
+        return user_id
 
     def register(self, username, password):
-        if username not in self.users_passwords:
-            self.users_passwords[username] = password
-            return self.add_active_user(username)
-        else:
-            return b"This user already exists"
+        if username in self.users_passwords:
+            return "This user already exists"
+
+        self.users_passwords[username] = password
+        user_id = self.add_active_user(username)
+        return user_id
+
     def add_active_user(self, username):
-        self.active_users[username] = len(self.active_users)+1
-        print(f"{username} is now active with ID {len(self.active_users)}")
-        return len(self.active_users)
+        user_id = len(self.active_users) + 1
+        self.active_users[username] = user_id
+        print(f"{username} is now active with ID {user_id}")
+        return user_id
 
-    def PlayAGame(self,playerID,createGame):
-        if createGame == True:
-            self.currentGames.append(Game(player1=playerID))
-            return len(self.currentGames) -1 
-        elif createGame == False:
-            freeGamesIndexes = []
-            b = 0
-            for a in self.currentGames:
-                b+= 1
-                if a.players[1] == -1:
-                    freeGamesIndexes.append(b-1)
-            return freeGamesIndexes
-        else:
-            return 3 #incorrect input error
-    def JoinAGame(self,playerID,gameNumber):    
-        self.currentGames[gameNumber].players[1] = playerID
-        return "You successfully joined the game"
+    def play_a_game(self, player_id, create_game):
+        if create_game is True:
+            self.currentGames.append(Game(player1=player_id))
+            game_id = len(self.currentGames) - 1
+            return game_id
 
-    def MakeAMoove(self,gameID,playerID,move):
-        game = self.currentGames[gameID]
-        if game.players[game.playerToMove] == playerID:
-            return game. MakeAMove(move)
-        else:
-            return 4 #wrong game error
+        if create_game is False:
+            free_games = []
+            for i, game in enumerate(self.currentGames):
+                if game.players[1] == -1:
+                    free_games.append(i)
+            return free_games
 
+        return "Incorrect input"
+
+    def join_a_game(self, player_id, game_number):
+        if game_number >= len(self.currentGames):
+            return "Game not found"
+
+        game = self.currentGames[game_number]
+
+        if game.players[1] != -1:
+            return "Game already full"
+
+        game.players[1] = player_id
+        return  "Joined successfully"
+
+    def make_a_move(self, game_id, player_id, move):
+        if game_id >= len(self.currentGames):
+            return "Game not found"
+
+        game = self.currentGames[game_id]
+
+        if game.players[game.playerToMove] != player_id:
+            return "Not your turn"
+
+        result = game.MakeAMove(move)
+        return result
 
     def logout(self, username):
-        if username in self.active_users:
-            del self.active_users[username]
-            print(f"{username} logged out")
-        else:
-            print(f"{username} is not logged in")
+        if username not in self.active_users:
+            return "User is not logged in"
+
+        del self.active_users[username]
+        print(f"{username} logged out")
+        return "Logged out successfully"
