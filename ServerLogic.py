@@ -3,9 +3,7 @@ import chess
 class Game():
     def __init__(self,player1,player2 = -1):
         self.board = chess.Board()
-        self.players = []
-        self.players[0] = player1
-        self.players[1] = player2
+        self.players = [player1,player2]
         self.playerToMove = 0
 
     def MakeAMove(self,move):
