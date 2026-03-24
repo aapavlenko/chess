@@ -47,7 +47,7 @@ class UserManager:
     def MakeAMoove(self,gameID,playerID,move):
         game = self.currentGames[gameID]
         if game.players[game.playerToMove] == playerID:
-            return game.Move(move)
+            return game. MakeAMove(move)
         else:
             return 4 #wrong game error
 

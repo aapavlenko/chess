@@ -29,16 +29,10 @@ def handleClient(conn, addr):
     elif command == "start":
         sendOutput(conn,userManager.PlayAGame(playerID=argument1,createGame=True))
     elif command == "join": 
-        joined = False
-        while joined == False:
-            sendOutput(conn,userManager.PlayAGame(playerID=argument1,createGame=False))
-            gameID = int(getInput(conn))
-            serverResopnse = userManager.JoinAGame(argument1,gameNumber=gameID)
-            if serverResopnse == 5:
-                sendOutput(conn,"incorrect game number")
-            else:
-                sendOutput(conn,serverResopnse)
-                joined = True
+        sendOutput(conn,userManager.PlayAGame(playerID=argument1,createGame=False))
+        gameID = int(getInput(conn))
+        serverResopnse = userManager.JoinAGame(argument1,gameNumber=gameID)
+        sendOutput(conn,serverResopnse)
     elif command == "move":
         sendOutput(conn, "game?")
         gameID = int(getInput(conn))
