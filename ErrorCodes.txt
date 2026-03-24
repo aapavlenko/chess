@@ -1,0 +1,4 @@
+1 incorrect move notation 
+2 illigal move
+3 incorrect input
+4 wrong game
