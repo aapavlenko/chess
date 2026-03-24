@@ -2,19 +2,9 @@ from ServerLogic import Game
 
 class UserManager:
     def __init__(self):
-        self.users_passwords = {}  
-        self.active_users = {}     
-        self.amountOfUsers = 0
-        self.currentGames = []
-        self.amountOfGames = 0
-
-    def start(self,logOrReg,username,password):
-        if logOrReg == "login":
-            return self.login(username, password)
-        elif logOrReg == "reg":
-            return self.register(username, password)
-        else:
-            return b"Invalid option, choose 'login' or 'reg'"
+        self.users_passwords = {}  #username ->password
+        self.active_users = {}  #username->ID 
+        self.currentGames = [] #games
 
     def login(self, username, password):
         if username in self.users_passwords:
@@ -32,24 +22,28 @@ class UserManager:
         else:
             return b"This user already exists"
     def add_active_user(self, username):
-        self.amountOfUsers += 1
-        self.active_users[username] = self.amountOfUsers
-        print(f"{username} is now active with ID {self.amountOfUsers}")
-        return self.amountOfUsers
+        self.active_users[username] = len(self.active_users)+1
+        print(f"{username} is now active with ID {len(self.active_users)}")
+        return len(self.active_users)
 
-    def PlayAGame(self,playerID,createOrJoin):
-        if createOrJoin.lower() == "create":
-            self.amountOfGames += 1
-            self.currentGames[self.amountOfGames] = Game(player1=playerID)
-            return self.amountOfGames
-        elif createOrJoin.lower() == "join":
-            freeGames = []
+    def PlayAGame(self,playerID,createGame):
+        if createGame == True:
+            self.currentGames.append(Game(player1=playerID))
+            return len(self.currentGames) -1 
+        elif createGame == False:
+            freeGamesIndexes = []
+            b = 0
             for a in self.currentGames:
+                b+= 1
                 if a.players[1] == -1:
-                    freeGames += a
-            return freeGames
+                    freeGamesIndexes.append(b-1)
+            return freeGamesIndexes
         else:
             return 3 #incorrect input error
+    def JoinAGame(self,playerID,gameNumber):    
+        self.currentGames[gameNumber].players[1] = playerID
+        return "You successfully joined the game"
+
     def MakeAMoove(self,gameID,playerID,move):
         game = self.currentGames[gameID]
         if game.players[game.playerToMove] == playerID:
@@ -60,8 +54,7 @@ class UserManager:
 
     def logout(self, username):
         if username in self.active_users:
-            self.amountOfUsers -= 1
-            self.active_users[username] = None
+            del self.active_users[username]
             print(f"{username} logged out")
         else:
             print(f"{username} is not logged in")

@@ -3,41 +3,47 @@ import threading
 from Server import UserManager 
 
 HOST = '0.0.0.0'  
-PORT = 9000      
+PORT = 9001      
 userManager = UserManager()
 
 def getInput(conn):
-    return conn.recv(1024).decode('utf-8').strip()
+    return  conn.recv(1024).decode('utf-8').strip()
 
 def sendOutput(conn,text):
+    print(text)
+    text = (str(text)+"\n\r").encode('utf-8')
     conn.sendall(text)
 
-def handle_client(conn, addr):
+def handleClient(conn, addr):
     print(f"New connection from {addr}")
-    sendOutput(conn,b"Welcome! Type 'exit' to quit.\n\n\nWhat do you want to do?\n")
     answer = getInput(conn)
-    splitID = answer.find(",")
-    splitGame = answer.find("/")
-    if splitID == -1:
-        logOrReg = answer
-        sendOutput(conn,"Enter username,password")
-        answer = getInput(conn)
-        splitName = answer.find(",")
-        if splitName == -1:
-            sendOutput(conn,b"Invalid format. Use username,password")
-            
-        username = answer[:splitName]
-        password = answer[splitName + 1:]
-
-        sendOutput(conn, userManager.start(logOrReg,username,password))
-        return handle_client(conn,addr)
-    elif splitGame == -1:
-        playerID = int(answer[:splitID])
-        return userManager.PlayAGame(playerID=playerID, createOrJoin=answer[splitID+1:])
-    else:
-        playerID = int(answer[splitGame+1:splitID])
-        GameID = int(answer[:splitGame])
-        return userManager.MakeAMoove(playerID==playerID,gameID=GameID,move=answer[:splitID])
+    print("User answered")
+    command = answer[:answer.find(" ")]
+    arguments = answer[answer.find(" ")+1:]
+    argument1 = arguments[:arguments.find(" ")]
+    argument2 = arguments[arguments.find(" ")+1:] 
+    if command == "log":
+        sendOutput(conn,userManager.login(username=argument1,password=argument2))
+    elif command == "reg":
+        sendOutput(conn,userManager.register(username=argument1,password=argument2))
+    elif command == "start":
+        sendOutput(conn,userManager.PlayAGame(playerID=argument1,createGame=True))
+    elif command == "join": 
+        joined = False
+        while joined == False:
+            sendOutput(conn,userManager.PlayAGame(playerID=argument1,createGame=False))
+            gameID = int(getInput(conn))
+            serverResopnse = userManager.JoinAGame(argument1,gameNumber=gameID)
+            if serverResopnse == 5:
+                sendOutput(conn,"incorrect game number")
+            else:
+                sendOutput(conn,serverResopnse)
+                joined = True
+    elif command == "move":
+        sendOutput(conn, "game?")
+        gameID = int(getInput(conn))
+        sendOutput(conn,userManager.MakeAMoove(gameID=gameID,playerID=argument1,move=argument2))
+    handleClient(conn=conn,addr=addr)
 
 
     
@@ -50,7 +56,7 @@ print(f"Server listening on {HOST}:{PORT}")
 try:
     while True:
         conn, addr = server.accept()
-        client_thread = threading.Thread(target=handle_client, args=(conn, addr))
+        client_thread = threading.Thread(target=handleClient, args=(conn, addr))
         client_thread.start()
 except KeyboardInterrupt:
     print("Server shutting down")
