@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches:
-      - main      
-  pull_request:   
+      - main
+  pull_request:
 
 jobs:
   build-and-test:
@@ -26,6 +26,6 @@ jobs:
 
       - name: Run unit tests
         env:
-          PYTHONPATH: ./src   # чтобы тесты видели модуль src
+          PYTHONPATH: ./src
         run: |
           pytest tests -v
