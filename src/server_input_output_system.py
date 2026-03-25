@@ -1,9 +1,9 @@
 import socket
 import threading
-from src.Server import UserManager 
+from Server import UserManager 
 
 HOST = '0.0.0.0'  
-PORT = 9001      
+PORT = 9002      
 userManager = UserManager()
 
 def get_input(conn):
@@ -38,6 +38,8 @@ def handle_client(conn, addr):
         send_output(conn, "game?")
         gameID = int(get_input(conn))
         send_output(conn,userManager.MakeAMoove(gameID=gameID,playerID=argument1,move=argument2))
+    elif command == "logout":
+        send_output(conn,userManager.logout(argument1))
     handle_client(conn=conn,addr=addr)
 
 

@@ -10,11 +10,14 @@ class GameClient:
         self.user_id = -1
         self.game_id = -1
         self.game_board = ""
-        self.connect(self)
+        self.connect()
 
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect((self.host, self.port))
+        try:
+            self.client.connect((self.host, self.port)) 
+        except:
+            print("no server online")
 
     def close(self):
         if self.client:
@@ -47,3 +50,5 @@ class GameClient:
         self.ask(f"move {self.user_id} {move}")
         self.game_board = self.get_response()
         return self.game_board
+    def logout(self,username):
+        self.ask(f"logout {username} a")

@@ -1,4 +1,4 @@
-from src.server_logic import Game
+from server_logic import Game
 
 
 class UserManager:
