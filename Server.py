@@ -2,10 +2,10 @@ from ServerLogic import Game
 
 
 class UserManager:
-    def __init__(self):
-        self.users_passwords = {}   # username -> password
-        self.active_users = {}      # username -> ID
-        self.currentGames = []      # games
+    def __init__(self, users_passwords = {}, active_users = {},current_games = []):
+        self.users_passwords = users_passwords   # username -> password
+        self.active_users = active_users      # username -> ID
+        self.current_games = current_games      # games
 
     def login(self, username, password):
         if username not in self.users_passwords:
@@ -33,13 +33,13 @@ class UserManager:
 
     def play_a_game(self, player_id, create_game):
         if create_game is True:
-            self.currentGames.append(Game(player1=player_id))
-            game_id = len(self.currentGames) - 1
+            self.current_games.append(Game(player1=player_id))
+            game_id = len(self.current_games) - 1
             return game_id
 
         if create_game is False:
             free_games = []
-            for i, game in enumerate(self.currentGames):
+            for i, game in enumerate(self.current_games):
                 if game.players[1] == -1:
                     free_games.append(i)
             return free_games
@@ -47,10 +47,10 @@ class UserManager:
         return "Incorrect input"
 
     def join_a_game(self, player_id, game_number):
-        if game_number >= len(self.currentGames):
+        if game_number >= len(self.current_games):
             return "Game not found"
 
-        game = self.currentGames[game_number]
+        game = self.current_games[game_number]
 
         if game.players[1] != -1:
             return "Game already full"
@@ -59,10 +59,10 @@ class UserManager:
         return  "Joined successfully"
 
     def make_a_move(self, game_id, player_id, move):
-        if game_id >= len(self.currentGames):
+        if game_id >= len(self.current_games):
             return "Game not found"
 
-        game = self.currentGames[game_id]
+        game = self.current_games[game_id]
 
         if game.players[game.playerToMove] != player_id:
             return "Not your turn"
