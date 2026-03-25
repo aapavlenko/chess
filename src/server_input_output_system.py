@@ -18,10 +18,10 @@ def handle_client(conn, addr):
     print(f"New connection from {addr}")
     answer = get_input(conn)
     print("User answered")
-    command = answer[:answer.find(" ")]
-    arguments = answer[answer.find(" ")+1:]
-    argument1 = arguments[:arguments.find(" ")]
-    argument2 = arguments[arguments.find(" ")+1:] 
+    parts = answer.split()
+    command = parts[0] if len(parts) > 0 else None
+    argument1 = parts[1] if len(parts) > 1 else None
+    argument2 = parts[2] if len(parts) > 2 else None
     if command == "log":
         send_output(conn,userManager.login(username=argument1,password=argument2))
     elif command == "reg":
