@@ -6,7 +6,7 @@ class Game():
         self.players = [player1,player2]
         self.playerToMove = 0
 
-    def MakeAMove(self,move):
+    def make_a_move(self,move):
         try:
             move = chess.Move.from_uci(move)
         
