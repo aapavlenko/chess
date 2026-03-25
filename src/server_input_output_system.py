@@ -1,6 +1,6 @@
 import socket
 import threading
-from Server import UserManager 
+from src.Server import UserManager 
 
 HOST = '0.0.0.0'  
 PORT = 9001      

@@ -1,6 +1,6 @@
 import pytest
-from Server import UserManager
-from server_logic import Game
+from src.Server import UserManager
+from src.server_logic import Game
 
 @pytest.fixture
 def user_manager():
