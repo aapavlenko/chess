@@ -1,6 +1,6 @@
 import tkinter as tk
 import chess
-from ClientInputOutputSystem import GameClient
+from client_input_output_system import GameClient
 
 board = chess.Board()
 gameClient = GameClient(host='10.176.155.15', port=9001)

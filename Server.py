@@ -1,4 +1,4 @@
-from ServerLogic import Game
+from server_logic import Game
 
 
 class UserManager:
