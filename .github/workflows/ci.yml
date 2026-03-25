@@ -1,0 +1,30 @@
+name: CI
+
+# События, при которых workflow запускается
+on:
+  push:
+    branches:
+      - main      # или ваша основная ветка
+  pull_request:   # также запускается на PR
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.14.3'  # версия Python вашего проекта
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: |
+          pytest          # если используете pytest
