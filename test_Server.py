@@ -63,3 +63,21 @@ def test_add_active_user(user_manager):
     assert user_manager.users_passwords == {"a": 123, "b": 123}
     assert len(user_manager.current_games) == 1
     assert user_manager.current_games[0].players[0] == 1
+
+def test_logout_success(user_manager):
+    result = user_manager.logout("a")
+
+    assert result == "Logged out successfully"
+    assert user_manager.active_users == {}
+    assert user_manager.users_passwords == {"a": 123, "b": 123}
+    assert len(user_manager.current_games) == 1
+    assert user_manager.current_games[0].players[0] == 1
+
+def test_logout_success(user_manager):
+    result = user_manager.logout("d")
+
+    assert result == "User is not logged in"
+    assert user_manager.active_users == {"a": 1}
+    assert user_manager.users_passwords == {"a": 123, "b": 123}
+    assert len(user_manager.current_games) == 1
+    assert user_manager.current_games[0].players[0] == 1
