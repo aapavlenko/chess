@@ -11,7 +11,7 @@ root.title("Chess")
 canvas = tk.Canvas(root, width=8*CELL, height=8*CELL)
 canvas.pack()
 
-selected_square = None  # выбранная клетка
+selected_square = None  # selected square
 
 pieces = {
     "P": "♙", "p": "♟",
@@ -39,22 +39,22 @@ def draw():
                                text=pieces[piece.symbol()],
                                font=("Arial", 32))
 
-# Окно выбора превращения пешки
+# Pawn promotion selection window
 def promote_pawn(move):
     promotion_window = tk.Toplevel(root)
-    promotion_window.title("Выберите фигуру")
+    promotion_window.title("Choose piece")
 
     def choose(piece_type):
         move.promotion = piece_type
         if move in board.legal_moves:
-            board.push(move)  # добавляем ход после выбора фигуры
+            board.push(move)  # push the move after choosing the piece
             gameClient.make_move(move)
         draw()
         promotion_window.destroy()
         global selected_square
-        selected_square = None  # сброс выбранной клетки
+        selected_square = None  # reset the selected square
 
-    tk.Label(promotion_window, text="Превратить пешку в:").pack(pady=5)
+    tk.Label(promotion_window, text="Promote pawn to:").pack(pady=5)
     tk.Button(promotion_window, text="♛", command=lambda: choose(chess.QUEEN)).pack(fill="x")
     tk.Button(promotion_window, text="♜", command=lambda: choose(chess.ROOK)).pack(fill="x")
     tk.Button(promotion_window, text="♝", command=lambda: choose(chess.BISHOP)).pack(fill="x")
@@ -78,17 +78,17 @@ def on_click(event):
         piece = board.piece_at(selected_square)
         move = chess.Move(selected_square, square)
 
-        # проверка превращения пешки
+        # check for pawn promotion
         if piece and piece.piece_type == chess.PAWN:
             rank = chess.square_rank(square)
             if (piece.color == chess.WHITE and rank == 7) or (piece.color == chess.BLACK and rank == 0):
-                # создаем ход с временным promotion в ферзя, чтобы он был legal
+                # create a move with temporary promotion to queen to make it legal
                 move = chess.Move(selected_square, square, promotion=chess.QUEEN)
                 if move in board.legal_moves:
-                    promote_pawn(move)  # покажем окно выбора
+                    promote_pawn(move)  # show the promotion window
                     return
 
-        # обычный ход без превращения
+        # normal move without promotion
         if move in board.legal_moves:
             board.push(move)
             gameClient.make_move(move=move)
