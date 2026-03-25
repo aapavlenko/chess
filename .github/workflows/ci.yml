@@ -25,7 +25,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run unit tests
-        env:
-          PYTHONPATH: ./src
+        shell: pwsh
         run: |
+          $env:PYTHONPATH = "${{ github.workspace }}\src"
           pytest tests -v
