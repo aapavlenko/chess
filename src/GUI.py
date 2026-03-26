@@ -1,102 +1,110 @@
 import tkinter as tk
 import chess
-from client_input_output_system import GameClient
 
-board = chess.Board()
-gameClient = GameClient(host='10.176.155.15', port=9001)
 CELL = 60
-root = tk.Tk()
-root.title("Chess")
 
-canvas = tk.Canvas(root, width=8*CELL, height=8*CELL)
-canvas.pack()
+class ChessGUI:
+    def __init__(self, root, gameClient):
+        self.root = root
+        self.gameClient = gameClient
+        self.board = chess.Board()
+        self.selected_square = None
 
-selected_square = None  # selected square
+        self.canvas = tk.Canvas(root, width=8*CELL, height=8*CELL)
+        self.canvas.pack()
 
-pieces = {
-    "P": "♙", "p": "♟",
-    "R": "♖", "r": "♜",
-    "N": "♘", "n": "♞",
-    "B": "♗", "b": "♝",
-    "Q": "♕", "q": "♛",
-    "K": "♔", "k": "♚",
-}
+        self.canvas.bind("<Button-1>", self.on_click)
 
-def draw():
-    canvas.delete("all")
-    for row in range(8):
-        for col in range(8):
-            color = "white" if (row + col) % 2 == 0 else "gray"
-            canvas.create_rectangle(col*CELL, row*CELL,
-                                    col*CELL+CELL, row*CELL+CELL,
-                                    fill=color)
-    for square in chess.SQUARES:
-        piece = board.piece_at(square)
-        if piece:
-            row = 7 - (square // 8)
-            col = square % 8
-            canvas.create_text(col*CELL+30, row*CELL+30,
-                               text=pieces[piece.symbol()],
-                               font=("Arial", 32))
+        self.pieces = {
+            "P": "♙", "p": "♟",
+            "R": "♖", "r": "♜",
+            "N": "♘", "n": "♞",
+            "B": "♗", "b": "♝",
+            "Q": "♕", "q": "♛",
+            "K": "♔", "k": "♚",
+        }
 
-# Pawn promotion selection window
-def promote_pawn(move):
-    promotion_window = tk.Toplevel(root)
-    promotion_window.title("Choose piece")
+        self.draw()
 
-    def choose(piece_type):
-        move.promotion = piece_type
-        if move in board.legal_moves:
-            board.push(move)  # push the move after choosing the piece
-            gameClient.make_move(move)
-        draw()
-        promotion_window.destroy()
-        global selected_square
-        selected_square = None  # reset the selected square
+    # ===== Draw board =====
+    def draw(self):
+        self.canvas.delete("all")
 
-    tk.Label(promotion_window, text="Promote pawn to:").pack(pady=5)
-    tk.Button(promotion_window, text="♛", command=lambda: choose(chess.QUEEN)).pack(fill="x")
-    tk.Button(promotion_window, text="♜", command=lambda: choose(chess.ROOK)).pack(fill="x")
-    tk.Button(promotion_window, text="♝", command=lambda: choose(chess.BISHOP)).pack(fill="x")
-    tk.Button(promotion_window, text="♞", command=lambda: choose(chess.KNIGHT)).pack(fill="x")
+        for row in range(8):
+            for col in range(8):
+                color = "white" if (row + col) % 2 == 0 else "gray"
+                self.canvas.create_rectangle(
+                    col*CELL, row*CELL,
+                    col*CELL+CELL, row*CELL+CELL,
+                    fill=color
+                )
 
+        for square in chess.SQUARES:
+            piece = self.board.piece_at(square)
+            if piece:
+                row = 7 - (square // 8)
+                col = square % 8
+                self.canvas.create_text(
+                    col*CELL+30, row*CELL+30,
+                    text=self.pieces[piece.symbol()],
+                    font=("Arial", 32)
+                )
 
-def on_click(event):
-    global selected_square
+    # ===== Pawn promotion window =====
+    def promote_pawn(self, move):
+        window = tk.Toplevel(self.root)
+        window.title("Choose piece")
 
-    col = int(event.x // CELL)
-    row = int(event.y // CELL)
-    if col < 0 or col > 7 or row < 0 or row > 7:
-        return
+        def choose(piece_type):
+            move.promotion = piece_type
 
-    square = chess.square(col, 7 - row)
+            if move in self.board.legal_moves:
+                self.board.push(move)
+                self.gameClient.make_move(move)
 
-    if selected_square is None:
-        if board.piece_at(square):
-            selected_square = square
-    else:
-        piece = board.piece_at(selected_square)
-        move = chess.Move(selected_square, square)
+            self.draw()
+            window.destroy()
+            self.selected_square = None
 
-        # check for pawn promotion
-        if piece and piece.piece_type == chess.PAWN:
-            rank = chess.square_rank(square)
-            if (piece.color == chess.WHITE and rank == 7) or (piece.color == chess.BLACK and rank == 0):
-                # create a move with temporary promotion to queen to make it legal
-                move = chess.Move(selected_square, square, promotion=chess.QUEEN)
-                if move in board.legal_moves:
-                    promote_pawn(move)  # show the promotion window
-                    return
+        tk.Label(window, text="Promote pawn to:").pack()
 
-        # normal move without promotion
-        if move in board.legal_moves:
-            board.push(move)
-            gameClient.make_move(move=move)
+        tk.Button(window, text="♛", command=lambda: choose(chess.QUEEN)).pack(fill="x")
+        tk.Button(window, text="♜", command=lambda: choose(chess.ROOK)).pack(fill="x")
+        tk.Button(window, text="♝", command=lambda: choose(chess.BISHOP)).pack(fill="x")
+        tk.Button(window, text="♞", command=lambda: choose(chess.KNIGHT)).pack(fill="x")
 
-        selected_square = None
+    # ===== Mouse click =====
+    def on_click(self, event):
+        col = int(event.x // CELL)
+        row = int(event.y // CELL)
 
-    draw()
+        if col < 0 or col > 7 or row < 0 or row > 7:
+            return
 
-canvas.bind("<Button-1>", on_click)
-draw()
-root.mainloop()
+        square = chess.square(col, 7 - row)
+
+        if self.selected_square is None:
+            if self.board.piece_at(square):
+                self.selected_square = square
+        else:
+            piece = self.board.piece_at(self.selected_square)
+            move = chess.Move(self.selected_square, square)
+
+            # Pawn promotion check
+            if piece and piece.piece_type == chess.PAWN:
+                rank = chess.square_rank(square)
+
+                if (piece.color and rank == 7) or (not piece.color and rank == 0):
+                    move = chess.Move(self.selected_square, square, promotion=chess.QUEEN)
+
+                    if move in self.board.legal_moves:
+                        self.promote_pawn(move)
+                        return
+
+            if move in self.board.legal_moves:
+                self.board.push(move)
+                self.gameClient.make_move(move)
+
+            self.selected_square = None
+
+        self.draw()
