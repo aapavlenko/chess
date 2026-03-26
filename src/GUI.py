@@ -5,6 +5,7 @@ import time
 
 CELL = 60
 
+
 class ChessGUI:
     def __init__(self, root, gameClient):
         self.root = root
@@ -12,37 +13,42 @@ class ChessGUI:
         self.board = chess.Board()
         self.selected_square = None
 
-        # Canvas for the chessboard
-        self.canvas = tk.Canvas(root, width=8*CELL, height=8*CELL)
+        self.canvas = tk.Canvas(root, width=8 * CELL, height=8 * CELL)
         self.canvas.pack()
-
         self.canvas.bind("<Button-1>", self.on_click)
 
         self.pieces = {
-            "P": "♙", "p": "♟",
-            "R": "♖", "r": "♜",
-            "N": "♘", "n": "♞",
-            "B": "♗", "b": "♝",
-            "Q": "♕", "q": "♛",
-            "K": "♔", "k": "♚",
+            "P": "♙",
+            "p": "♟",
+            "R": "♖",
+            "r": "♜",
+            "N": "♘",
+            "n": "♞",
+            "B": "♗",
+            "b": "♝",
+            "Q": "♕",
+            "q": "♛",
+            "K": "♔",
+            "k": "♚",
         }
 
-        # Draw initial board position
         self.draw()
 
-        # Start a thread that waits for board updates from the server
         threading.Thread(target=self.poll_server_board, daemon=True).start()
 
     # ===== Draw the board and pieces =====
     def draw(self):
         self.canvas.delete("all")
+
         for row in range(8):
             for col in range(8):
                 color = "white" if (row + col) % 2 == 0 else "gray"
                 self.canvas.create_rectangle(
-                    col*CELL, row*CELL,
-                    col*CELL+CELL, row*CELL+CELL,
-                    fill=color
+                    col * CELL,
+                    row * CELL,
+                    col * CELL + CELL,
+                    row * CELL + CELL,
+                    fill=color,
                 )
 
         for square in chess.SQUARES:
@@ -51,9 +57,10 @@ class ChessGUI:
                 row = 7 - (square // 8)
                 col = square % 8
                 self.canvas.create_text(
-                    col*CELL+CELL//2, row*CELL+CELL//2,
+                    col * CELL + CELL // 2,
+                    row * CELL + CELL // 2,
                     text=self.pieces[piece.symbol()],
-                    font=("Arial", 32)
+                    font=("Arial", 32),
                 )
 
     # ===== Pawn promotion =====
@@ -77,7 +84,11 @@ class ChessGUI:
     # ===== Attempt to make a move =====
     def try_make_move(self, move):
         def worker():
-            result = self.gameClient.make_move(move)
+            try:
+                result = self.gameClient.make_move(move)
+            except Exception as e:
+                print("make_move error:", e)
+                return
 
             if result != "illegal move":
                 self.board.push(move)
@@ -117,29 +128,30 @@ class ChessGUI:
                 self.try_make_move(move)
 
             self.selected_square = None
-
-        self.draw()
+            self.draw()
 
     # ===== Wait for board updates from the server =====
     def poll_server_board(self):
         last_fen = None
-
         while True:
             try:
-                server_fen = self.gameClient.get_board()  # server must return FEN
-            except:
+                server_fen = self.gameClient.get_board()
+            except Exception as e:
+                # сервер недоступен / ошибка — просто подождём и попробуем снова
+                # чтобы не заспамить консоль
                 time.sleep(0.3)
                 continue
 
-            if server_fen != last_fen:
-                last_fen = server_fen
+            if not server_fen or server_fen == last_fen:
+                time.sleep(0.3)
+                continue
 
-                try:
-                    self.board = chess.Board(server_fen)
-                except:
-                    time.sleep(0.3)
-                    continue
+            last_fen = server_fen
+            try:
+                self.board = chess.Board(server_fen)
+            except Exception as e:
+                time.sleep(0.3)
+                continue
 
-                self.root.after(0, self.draw)
-
+            self.root.after(0, self.draw)
             time.sleep(0.3)

@@ -1,25 +1,42 @@
 import chess
 
-class Game():
-    def __init__(self,player1,player2 = -1):
-        self.board = chess.Board()
-        self.players = [player1,player2]
+
+class Game:
+    def __init__(self, player1):
+        # Игроки: [белые, чёрные]
+        self.players = [int(player1), -1]
+        # 0 — ход белых, 1 — ход чёрных
         self.playerToMove = 0
+        self.board = chess.Board()
 
-    def make_a_move(self,move,userID):
-        if (self.board.turn == chess.WHITE and userID == self.players[0]) or (self.board.turn == chess.BLACK and userID == self.players[1]):
-            try:
-                move = chess.Move.from_uci(move)
-            
-                if move in self.board.legal_moves:
-                    self.board.push(move)  
-                    self.playerToMove += 1-2*self.playerToMove #reverses the player to move
-                    return self.board
-                else:
-                    return "incorrect move" #illigal move error
-        
-            except:
-                return "incorrect move notation" #incorrect move notation error
-        else:
-            return "not your move"
+    def add_second_player(self, player2):
+        self.players[1] = int(player2)
 
+    def make_a_move(self, move, userID):
+        userID = int(userID)
+
+        # Нельзя ходить чёрными, если второго игрока нет
+        if self.playerToMove == 1 and self.players[1] == -1:
+            return "Waiting for second player"
+
+        # Проверяем, что ход делает тот, чей сейчас ход
+        if self.players[self.playerToMove] != userID:
+            return "Not your turn"
+
+        # Преобразуем строку хода в объект python-chess
+        try:
+            move_obj = chess.Move.from_uci(move)
+        except Exception:
+            return "illegal move"
+
+        # Проверяем легальность хода
+        if move_obj not in self.board.legal_moves:
+            return "illegal move"
+
+        # Делаем ход
+        self.board.push(move_obj)
+
+        # Меняем очередь хода
+        self.playerToMove = 1 - self.playerToMove
+
+        return "ok"
