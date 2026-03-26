@@ -1,7 +1,7 @@
 import tkinter as tk
 import threading
 from client_input_output_system import GameClient
-from GUI import ChessGUI  # исправленный GUI
+from GUI import ChessGUI  # fixed GUI
 
 class App:
     def __init__(self, ip):
@@ -70,10 +70,10 @@ class App:
     def start_game(self, mode):
         self.clear_window(self.root)
         
-        # Создаём GUI сразу
+        # Create GUI immediately
         self.chess_gui = ChessGUI(self.root, self.gameClient)
 
-        # Сетевые операции в фоне
+        # Network operations in background
         threading.Thread(target=self.handle_game_start, args=(mode,), daemon=True).start()
 
     # ===== Handle game in background =====
@@ -96,5 +96,5 @@ class App:
 
 # ===== Run app =====
 if __name__ == "__main__":
-    app = App('10.176.155.12')
+    app = App('192.168.137.1')
     app.root.mainloop()

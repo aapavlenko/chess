@@ -12,7 +12,7 @@ class ChessGUI:
         self.board = chess.Board()
         self.selected_square = None
 
-        # Canvas для шахматной доски
+        # Canvas for the chessboard
         self.canvas = tk.Canvas(root, width=8*CELL, height=8*CELL)
         self.canvas.pack()
 
@@ -27,13 +27,13 @@ class ChessGUI:
             "K": "♔", "k": "♚",
         }
 
-        # Рисуем начальное положение
+        # Draw initial board position
         self.draw()
 
-        # Запускаем поток, который ждёт изменения доски на сервере
+        # Start a thread that waits for board updates from the server
         threading.Thread(target=self.poll_server_board, daemon=True).start()
 
-    # ===== Рисуем доску и фигуры =====
+    # ===== Draw the board and pieces =====
     def draw(self):
         self.canvas.delete("all")
         for row in range(8):
@@ -56,7 +56,7 @@ class ChessGUI:
                     font=("Arial", 32)
                 )
 
-    # ===== Превращение пешки =====
+    # ===== Pawn promotion =====
     def promote_pawn(self, move):
         window = tk.Toplevel(self.root)
         window.title("Choose piece")
@@ -74,7 +74,7 @@ class ChessGUI:
         tk.Button(window, text="♝", command=lambda: choose(chess.BISHOP)).pack(fill="x")
         tk.Button(window, text="♞", command=lambda: choose(chess.KNIGHT)).pack(fill="x")
 
-    # ===== Попытка сделать ход =====
+    # ===== Attempt to make a move =====
     def try_make_move(self, move):
         def worker():
             result = self.gameClient.make_move(move)
@@ -83,11 +83,11 @@ class ChessGUI:
                 self.board.push(move)
                 self.root.after(0, self.draw)
             else:
-                print("Сервер отклонил ход:", move)
+                print("Server rejected move:", move)
 
         threading.Thread(target=worker, daemon=True).start()
 
-    # ===== Клик мышью =====
+    # ===== Mouse click handler =====
     def on_click(self, event):
         col = int(event.x // CELL)
         row = int(event.y // CELL)
@@ -104,7 +104,7 @@ class ChessGUI:
             piece = self.board.piece_at(self.selected_square)
             move = chess.Move(self.selected_square, square)
 
-            # Превращение пешки
+            # Pawn promotion check
             if piece and piece.piece_type == chess.PAWN:
                 rank = chess.square_rank(square)
                 if (piece.color and rank == 7) or (not piece.color and rank == 0):
@@ -120,13 +120,13 @@ class ChessGUI:
 
         self.draw()
 
-    # ===== Ожидание изменения доски на сервере =====
+    # ===== Wait for board updates from the server =====
     def poll_server_board(self):
         last_fen = None
 
         while True:
             try:
-                server_fen = self.gameClient.get_board()  # сервер должен возвращать FEN
+                server_fen = self.gameClient.get_board()  # server must return FEN
             except:
                 time.sleep(0.3)
                 continue
