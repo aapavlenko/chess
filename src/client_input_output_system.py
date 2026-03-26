@@ -9,7 +9,6 @@ class GameClient:
 
         self.user_id = -1
         self.game_id = -1
-        self.game_board = ""
         self.connect()
 
     def connect(self):
@@ -48,7 +47,11 @@ class GameClient:
 
     def make_move(self, move):
         self.ask(f"move {self.user_id} {move}")
-        self.game_board = self.get_response()
-        return self.game_board
+        response = self.get_response()
+        return response
+    
     def logout(self,username):
         self.ask(f"logout {username} a")
+
+    def get_board(self):
+        return self.ask(f"get_board {self.game_id} a")

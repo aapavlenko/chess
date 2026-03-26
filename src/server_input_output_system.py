@@ -3,7 +3,7 @@ import threading
 from Server import UserManager 
 
 HOST = '0.0.0.0'  
-PORT = 9002      
+PORT = 9000      
 userManager = UserManager()
 
 def get_input(conn):
@@ -40,7 +40,10 @@ def handle_client(conn, addr):
         send_output(conn,userManager.MakeAMoove(gameID=gameID,playerID=argument1,move=argument2))
     elif command == "logout":
         send_output(conn,userManager.logout(argument1))
+    elif command == "get_board":
+        send_output(conn, userManager.get_board(argument1).fen())
     handle_client(conn=conn,addr=addr)
+    
 
 
     

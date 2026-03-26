@@ -77,3 +77,6 @@ class UserManager:
         del self.active_users[username]
         print(f"{username} logged out")
         return "Logged out successfully"
+    
+    def get_board(self, gameID):
+        return self.current_games[gameID]
