@@ -3,7 +3,7 @@ import threading
 from Server import UserManager 
 
 HOST = '0.0.0.0'  
-PORT = 9000      
+PORT = 9001      
 userManager = UserManager()
 
 def get_input(conn):

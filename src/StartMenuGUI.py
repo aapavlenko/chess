@@ -8,7 +8,7 @@ class App:
         self.root = tk.Tk()
         self.root.title("Authorization")
         self.root.geometry("300x200")
-        self.gameClient = GameClient(ip, 9000)
+        self.gameClient = GameClient(ip, 9001)
         self.create_main_screen()
 
     # ===== Main screen =====
@@ -96,5 +96,5 @@ class App:
 
 # ===== Run app =====
 if __name__ == "__main__":
-    app = App('192.168.137.1')
+    app = App('10.176.155.12') 
     app.root.mainloop()

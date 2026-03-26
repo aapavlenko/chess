@@ -48,10 +48,11 @@ class GameClient:
     def make_move(self, move):
         self.ask(f"move {self.user_id} {move}")
         response = self.get_response()
-        return response
+        return response 
     
     def logout(self,username):
         self.ask(f"logout {username} a")
 
     def get_board(self):
-        return self.ask(f"get_board {self.game_id} a")
+        self.ask(f"get_board {self.game_id} a")
+        return self.get_response()
