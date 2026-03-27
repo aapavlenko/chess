@@ -35,7 +35,6 @@ class UserManager:
             self.current_games.append(game)
             return len(self.current_games) - 1
 
-        # список свободных игр
         return [i for i, g in enumerate(self.current_games) if g.players[1] == -1]
 
     def join_a_game(self, player_id, game_number):
@@ -47,7 +46,6 @@ class UserManager:
 
         game = self.current_games[game_number]
 
-        # нельзя зайти в игру тем же user_id
         if game.players[0] == player_id:
             return "You cannot join your own game"
 

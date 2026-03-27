@@ -85,13 +85,13 @@ class ChessGUI:
     def try_make_move(self, move):
         def worker():
             try:
-                # сервер ждёт ход в формате UCI-строки
+                # server waits for the move in UCI format
                 result = self.gameClient.make_move(str(move))
             except Exception as e:
                 print("make_move error:", e)
                 return
 
-            # ДВИГАЕМ ФИГУРУ ТОЛЬКО ЕСЛИ СЕРВЕР СКАЗАЛ "ok"
+            # only make a moove when server says OK
             if result == "ok":
                 self.board.push(move)
                 self.root.after(0, self.draw)
@@ -113,7 +113,7 @@ class ChessGUI:
 
         if self.selected_square is None:
             piece = self.board.piece_at(square)
-            # выбираем только свои фигуры (по очереди хода)
+            # only choose your pieces
             if piece and piece.color == self.board.turn:
                 self.selected_square = square
         else:

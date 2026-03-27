@@ -2,7 +2,7 @@ import tkinter as tk
 import threading
 
 from client_input_output_system import GameClient
-from GUI import ChessGUI  # fixed GUI
+from GUI import ChessGUI  
 
 
 class App:
