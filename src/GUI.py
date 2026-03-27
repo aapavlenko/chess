@@ -85,22 +85,25 @@ class ChessGUI:
     def try_make_move(self, move):
         def worker():
             try:
-                result = self.gameClient.make_move(move)
+                # сервер ждёт ход в формате UCI-строки
+                result = self.gameClient.make_move(str(move))
             except Exception as e:
                 print("make_move error:", e)
                 return
 
-            if result != "illegal move":
+            # ДВИГАЕМ ФИГУРУ ТОЛЬКО ЕСЛИ СЕРВЕР СКАЗАЛ "ok"
+            if result == "ok":
                 self.board.push(move)
                 self.root.after(0, self.draw)
             else:
-                print("Server rejected move:", move)
+                print("Server rejected move:", result)
+                # доска всё равно синхронизируется через poll_server_board
 
         threading.Thread(target=worker, daemon=True).start()
 
     # ===== Mouse click handler =====
     def on_click(self, event):
-        col = int(event.x // CELL)
+        col = int(event.x // CELL) 
         row = int(event.y // CELL)
 
         if not (0 <= col <= 7 and 0 <= row <= 7):
@@ -109,7 +112,9 @@ class ChessGUI:
         square = chess.square(col, 7 - row)
 
         if self.selected_square is None:
-            if self.board.piece_at(square):
+            piece = self.board.piece_at(square)
+            # выбираем только свои фигуры (по очереди хода)
+            if piece and piece.color == self.board.turn:
                 self.selected_square = square
         else:
             piece = self.board.piece_at(self.selected_square)
@@ -136,9 +141,7 @@ class ChessGUI:
         while True:
             try:
                 server_fen = self.gameClient.get_board()
-            except Exception as e:
-                # сервер недоступен / ошибка — просто подождём и попробуем снова
-                # чтобы не заспамить консоль
+            except Exception:
                 time.sleep(0.3)
                 continue
 
@@ -149,7 +152,7 @@ class ChessGUI:
             last_fen = server_fen
             try:
                 self.board = chess.Board(server_fen)
-            except Exception as e:
+            except Exception:
                 time.sleep(0.3)
                 continue
 

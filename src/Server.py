@@ -2,10 +2,10 @@ from server_logic import Game
 
 
 class UserManager:
-    def __init__(self):
-        self.users_passwords = {}   # username -> password
-        self.active_users = {}      # username -> user_id
-        self.current_games = []     # list of Game objects
+    def __init__(self,users_passwords = {},active_users = {},current_games = []):
+        self.users_passwords = users_passwords   # username -> password
+        self.active_users = active_users      # username -> user_id
+        self.current_games = current_games     # list of Game objects
 
     # ===== AUTH =====
     def login(self, username, password):
